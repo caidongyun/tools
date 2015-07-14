@@ -1,0 +1,170 @@
+// sniff/sniff.cc
+
+#include "sniff.hh"
+
+int sniff(const int argc, char const*const* argv, \
+		    const int common_argc, char const*const* common_argv) {
+   
+   int count = 0, sockfd;
+   char packet[2048];
+
+   /* struct sock_filter *bpf_code = NULL; */
+   char *bpf_code = NULL;
+   struct sock_fprog filter;
+
+   struct sockaddr_ll sall;
+   struct ifreq interface;
+
+#ifdef	EXT3GREP_INIT_H
+
+   args arg(argc, argv, COMMANDS, sniff_init);
+#else
+
+   args arg(argc, argv, COMMANDS);
+#endif 
+   
+   args::iterator iter(arg.begin());
+
+   sall.sll_family = AF_PACKET;
+   sall.sll_protocol = htons(ETH_P_ALL);
+
+   if (iter[DEVICE] && iter++) {
+
+      do {
+
+	 sockfd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+         if (sockfd < 0) {
+
+            perror("socket");
+	    return -1;
+         }		 
+
+	 strncpy(interface.ifr_name, (*iter).c_str(), IFNAMSIZ);
+
+	 memset(&interface, sizeof(interface), 0);
+
+	 if (ioctl(sockfd, SIOCGIFINDEX, &interface) < 0) {
+
+            perror ("ioctl SIOCGIFINDEX");
+	    close (sockfd);
+	    return -1;
+         }
+
+	 sall.sll_ifindex = interface.ifr_ifindex; 
+/*
+	 if (bind(sockfd, (struct sockaddr *)&sall, \
+				          sizeof(sall)) < 0) {
+
+            perror("bind");
+	    close(sockfd);
+	    return -1;
+         }		 
+*/	 
+
+         iter.push();
+
+	 if (iter[FOR] && iter++) {
+
+            do {
+
+               if ((*iter).compare(ARP) == 0) {
+
+	          std::cout<<ARP<<std::endl;
+
+	          iter.push();
+
+		  if ( iter++ ) {
+
+		     if ((*iter).compare(REQUEST_REPLY) == 0) {
+
+		        std::cout<<REQUEST_REPLY<<std::endl;
+
+		        iter.discard();
+		     }
+		     else if ((*iter).compare(REPLY_REQUEST) == 0) {
+
+		        std::cout<<REPLY_REQUEST<<std::endl;
+
+		        iter.discard();
+		     }
+		     else if ((*iter).compare(REQUEST) == 0) {
+
+		        std::cout<<REQUEST<<std::endl;
+
+		        iter.discard();
+		     }
+		     else if ((*iter).compare(REPLY) == 0) {
+
+		        std::cout<<REPLY<<std::endl;
+
+		        iter.discard();
+		     }
+		     else {
+
+		        iter.pop();
+		     }
+		  }
+		  else {
+
+		     iter.pop();
+		  }
+
+                  filter.len = bpf((struct sock_filter**)&bpf_code, ETH_P_ARP, 2048);
+	       }  		       
+               else if ((*iter).compare(IP) == 0) {
+
+	          std::cout<<IP<<std::endl;
+
+		  filter.len = bpf((struct sock_filter**)&bpf_code, ETH_P_IP, 2048);      
+               }
+
+	       filter.filter = (struct sock_filter*)bpf_code;
+
+	       if (filter.len > 0) {
+
+		  if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, \
+					    &filter, sizeof(filter)) < 0) {
+
+                     perror("setsockopt");
+		     close(sockfd);
+		     return -1;
+                  }
+
+                  
+		  while (count >= 0) { 
+
+                    cout<<"Received :";			  
+                    count = recvfrom(sockfd, packet, 2048, 0, NULL, NULL); 
+		    cout<<count<<endl;
+                  }
+
+		  free(bpf_code);
+
+		  bpf_code = NULL;
+               }
+
+               count = 0;
+	       close(sockfd);
+	       
+            } while (iter++);		    
+         }
+             		 
+         iter.pop();
+
+      } while (iter++);	
+
+      if (bpf_code != NULL) {
+
+         free(bpf_code);
+	 bpf_code = NULL;
+      } 	      
+
+      close(sockfd);
+   }
+
+#ifdef	EXT3GREP_INIT_H
+   return arg.init();
+#endif   
+ 
+   return 0;	 
+}	

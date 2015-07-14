@@ -1,0 +1,18 @@
+# TODO
+
+The CLI processing does not process multiple commands given as a group 
+lead by a single hyphen.... case in point -abcd, where -a -b -c -d are 
+four different commands. This feature should be implemented. 
+
+
+The common arguments.... as in
+    ./programm 1 2 3 4 --first-command --second-command 
+so in above case the common arguments are 1 2 3 4, they go to each
+--first-command --second-comand.... so on and so forth, the way they
+are now being put forward is not abstract(enough). It should be made abstract.
+
+
+Infact what I would love to do or see is an STL container which is able to 
+process the CLI arguments and provide lots and lots of abstraction. Infact I'm
+already working on an implementation but due to lack of time(yes, the same old excuses, excuses) the code base is not getting done at the moment, if you like to work on it just send me a howl at sohail@stupidcomputing.com and I'll(with pleasure) send you the copy of what ever I am able to organize.
+

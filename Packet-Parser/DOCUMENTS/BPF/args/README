@@ -1,0 +1,89 @@
+# README
+
+Argument collection.
+---------------------
+----------------------
+
+Its an extensible or scaleabel process. The class args(args/args.hh) provides
+the services of random access container(It is not templated, the contained type
+is hardcoded). The class iter(args/iter.hh) provides the services of an 
+iterator(of type random_access_iterator_tag). 
+
+Include the file args/args.hh where you need the above mentioned services. 
+
+In the main function(or where ever the variables) argc, and argv are in scope
+instantiate the class args...
+
+args argsObj(argc, argv, "help,--help,-h,h,HELP,/?,?#superblock,--superblock,-s,--super,s");
+
+All the methods(except args::begin and args::end) and properties are private, 
+the class iter is the friend of class args so in order to access your arguments 
+you need to define/get an interator on the newly created object/instance.
+
+args::iterator iter(argObj.begin());
+
+An extensive example
+---------------------
+
+your files....
+   
+      args.h
+      main.hh
+      main.cc
+
+file args.h
+
+#ifndef EXT3GREP_ARGS_H
+#include "args/args.hh"
+#endif
+#define YOUR_COMMANDS	"help,--help,-h,h,HELP,/?,?#superblock#EI_MAG0#EI_MAG1"
+
+#define		HELP		1
+#define		SUPERBLOCK 	2
+#define		EI_MAG0		3
+#define		EI_MAG1		4
+
+file main.hh
+
+#include "args.h"
+
+file main.cc
+
+#include "main.hh"
+
+int main(int argc, char* argv[]) {
+ 
+   args argObj(argc, argv, YOUR_COMMANDS);
+   args::iterator iter(argObj.begin());
+    
+   //For example at CLI you typed the following command...
+   //./main 1 2 3 4 5 help
+   //The COMMON then represents tokens 1 2 3 4 5
+   if(iter[COMMON])
+      while(iter++)
+         cout<<*iter<<endl;
+
+   while(iter[EIMAG0]) {
+
+      iter.push();
+      while(iter[EIMAG1])
+         cout<<*iter<<endl
+      iter.pop();
+      cout<<*iter<<endl;
+   }
+
+   return 0;
+}
+
+One other feature which is only enabled if macro EXT3GREP_INIT_H is 
+defined(This macro is defined in file args/args.hh). This feature 
+is disabled by default, though it works in the intended way but at the 
+moment it is less abstract. If you are interested in this feature 
+then study the code encapsulated by the ....
+
+#ifdef EXT3GREP_INIT_H
+#endif 
+.... prepreocessor directives and provide the missing parts.
+
+Sohail Qayum Malik.
+--------------------

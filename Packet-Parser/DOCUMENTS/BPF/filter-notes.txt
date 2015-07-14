@@ -1,0 +1,24 @@
+#README(filter-notes.txt)
+#---------------------------
+
+A wikipedia document on BPF filter can be found here(http://en.wikipedia.org/wiki/Berkeley_Packet_Filter).
+
+I donot know how it will look when it is done, I am hoping to achieve following command line behavior(look and feel)... 
+
+still, you can do the following stuff with this programm
+# ./sniffer sniff device eth0 eth1 for arp ip
+# ./sniffer sniff device eth0 for arp request
+# ./sniffer sniff device eth1 for arp reply
+# ./sniffer sniff device eth0 for ip where protocol is icmp
+# ./sniffer sniff promiscuous device eth0 for arp reply and ip
+# ./sniffer sniff promiscuous device eth0 for arp reply,request and ip
+
+
+Most of the code is devoted towards handling and processing the command line arguments and that code is in directory args. The code related to BPF(which does all the BPFing) is in directory BPF.
+
+
+Note:- if today I get a chance to work on this programm again then I would drop this codebase(to handle command line arguments) and instead go with the newer implementation available here(...
+
+                               http://argsv.codeplex.com
+                                                                                                           )
+
